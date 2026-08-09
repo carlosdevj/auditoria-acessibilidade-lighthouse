@@ -10,14 +10,21 @@ https://carlosdevj.github.io/auditoria-acessibilidade-lighthouse/
 
 https://drive.google.com/drive/folders/1hbUShqWaIOfPbgR32idlKteJlBfa2HLw
 
-## Recursos da página
+## Estrutura
 
-- HTML semântico
-- Layout responsivo
-- Navegação por teclado e foco visível
-- Texto alternativo e atributos ARIA
-- Tema claro e escuro
-- Modo de alto contraste
-- Controle de tamanho da fonte
-- Preferências de acessibilidade persistidas no navegador
-- Dinâmica interativa para apresentação
+- `index.html`: conteúdo e semântica da apresentação.
+- `styles.css`: layout, responsividade, contraste e foco visível.
+- `script.js`: preferências de acessibilidade, navegação interna com gerenciamento de foco e quiz.
+- `assets/ifrr-logo.svg`: marca usada no cabeçalho e na capa.
+
+## Recursos de acessibilidade
+
+- link para pular ao conteúdo e link direto ao quiz;
+- navegação interna com rolagem e transferência de foco para o título da seção;
+- foco visível reforçado;
+- painel de acessibilidade com foco contido, botão de fechar e suporte a `Esc`;
+- quiz operável por teclado com `Tab`, setas e `Espaço`;
+- tema claro/escuro, alto contraste e controle do tamanho da fonte;
+- suporte a `prefers-reduced-motion`;
+- regiões `aria-live` para mensagens do quiz;
+- conteúdo responsivo para desktop e dispositivos móveis.
