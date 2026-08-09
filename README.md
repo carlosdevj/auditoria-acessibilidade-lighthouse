@@ -6,6 +6,10 @@ Página acadêmica para apresentação da auditoria de acessibilidade realizada 
 
 https://carlosdevj.github.io/auditoria-acessibilidade-lighthouse/
 
+## Relatórios do Lighthouse
+
+https://drive.google.com/drive/folders/1hbUShqWaIOfPbgR32idlKteJlBfa2HLw
+
 ## Recursos da página
 
 - HTML semântico
@@ -17,5 +21,3 @@ https://carlosdevj.github.io/auditoria-acessibilidade-lighthouse/
 - Controle de tamanho da fonte
 - Preferências de acessibilidade persistidas no navegador
 - Dinâmica interativa para apresentação
-
-> O link público dos relatórios do Lighthouse deve ser configurado na constante `REPORTS_URL` do `index.html` quando estiver disponível.
