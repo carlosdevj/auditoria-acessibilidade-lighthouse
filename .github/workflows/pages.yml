@@ -33,6 +33,7 @@ jobs:
 
           curl -fsSL "https://raw.githubusercontent.com/carlosdevj/trabalho-jacauna/fa6883bed6a343e0d80e38ec8de4412277e51e57/apresentacao-lighthouse/index.html" -o index.html
           curl -fsSL "https://raw.githubusercontent.com/carlosdevj/trabalho-jacauna/fa6883bed6a343e0d80e38ec8de4412277e51e57/apresentacao-lighthouse/assets/ifrr-logo.svg" -o assets/ifrr-logo.svg
+          sed -i 's#COLE_AQUI_O_LINK_PUBLICO_DA_PASTA#https://drive.google.com/drive/folders/1hbUShqWaIOfPbgR32idlKteJlBfa2HLw#g' index.html
           touch .nojekyll
 
           cat > README.md <<'EOF'
@@ -43,6 +44,10 @@ jobs:
           ## GitHub Pages
 
           https://carlosdevj.github.io/auditoria-acessibilidade-lighthouse/
+
+          ## Relatórios do Lighthouse
+
+          https://drive.google.com/drive/folders/1hbUShqWaIOfPbgR32idlKteJlBfa2HLw
 
           ## Recursos da página
 
@@ -55,15 +60,13 @@ jobs:
           - Controle de tamanho da fonte
           - Preferências de acessibilidade persistidas no navegador
           - Dinâmica interativa para apresentação
-
-          > O link público dos relatórios do Lighthouse deve ser configurado na constante `REPORTS_URL` do `index.html` quando estiver disponível.
           EOF
 
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add index.html assets/ifrr-logo.svg README.md .nojekyll
           if ! git diff --cached --quiet; then
-            git commit -m "Adiciona página da auditoria de acessibilidade"
+            git commit -m "Atualiza link público dos relatórios"
             git push
           fi
 
