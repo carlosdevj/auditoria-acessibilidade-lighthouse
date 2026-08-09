@@ -6,13 +6,13 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: write
+  contents: read
   pages: write
   id-token: write
 
 concurrency:
   group: pages
-  cancel-in-progress: false
+  cancel-in-progress: true
 
 jobs:
   deploy:
@@ -25,62 +25,18 @@ jobs:
       - name: Baixar repositório
         uses: actions/checkout@v4
 
-      - name: Preparar arquivos da apresentação
-        shell: bash
-        run: |
-          set -euo pipefail
-          mkdir -p assets
-
-          curl -fsSL "https://raw.githubusercontent.com/carlosdevj/trabalho-jacauna/fa6883bed6a343e0d80e38ec8de4412277e51e57/apresentacao-lighthouse/index.html" -o index.html
-          curl -fsSL "https://raw.githubusercontent.com/carlosdevj/trabalho-jacauna/fa6883bed6a343e0d80e38ec8de4412277e51e57/apresentacao-lighthouse/assets/ifrr-logo.svg" -o assets/ifrr-logo.svg
-          sed -i 's#COLE_AQUI_O_LINK_PUBLICO_DA_PASTA#https://drive.google.com/drive/folders/1hbUShqWaIOfPbgR32idlKteJlBfa2HLw#g' index.html
-          touch .nojekyll
-
-          cat > README.md <<'EOF'
-          # Auditoria de Acessibilidade com Lighthouse
-
-          Página acadêmica para apresentação da auditoria de acessibilidade realizada com o Lighthouse nos sites Amazon Brasil, SHEIN Brasil e no site desenvolvido pelo grupo.
-
-          ## GitHub Pages
-
-          https://carlosdevj.github.io/auditoria-acessibilidade-lighthouse/
-
-          ## Relatórios do Lighthouse
-
-          https://drive.google.com/drive/folders/1hbUShqWaIOfPbgR32idlKteJlBfa2HLw
-
-          ## Recursos da página
-
-          - HTML semântico
-          - Layout responsivo
-          - Navegação por teclado e foco visível
-          - Texto alternativo e atributos ARIA
-          - Tema claro e escuro
-          - Modo de alto contraste
-          - Controle de tamanho da fonte
-          - Preferências de acessibilidade persistidas no navegador
-          - Dinâmica interativa para apresentação
-          EOF
-
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add index.html assets/ifrr-logo.svg README.md .nojekyll
-          if ! git diff --cached --quiet; then
-            git commit -m "Atualiza link público dos relatórios"
-            git push
-          fi
-
       - name: Configurar GitHub Pages
         uses: actions/configure-pages@v5
-        with:
-          enablement: true
 
       - name: Preparar artefato do site
         shell: bash
         run: |
+          set -euo pipefail
           rm -rf _site
           mkdir -p _site/assets
           cp index.html _site/index.html
+          cp styles.css _site/styles.css
+          cp script.js _site/script.js
           cp assets/ifrr-logo.svg _site/assets/ifrr-logo.svg
           touch _site/.nojekyll
 
