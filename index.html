@@ -1,0 +1,764 @@
+<!doctype html>
+<html lang="pt-BR" data-theme="dark" data-contrast="normal">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Apresentação acadêmica sobre auditoria de acessibilidade web com Lighthouse em Amazon, SHEIN e site do grupo.">
+  <meta name="color-scheme" content="dark light">
+  <title>Auditoria de Acessibilidade Web | IFRR</title>
+  <style>
+    :root {
+      --font-scale: 1;
+      --bg: #071f19;
+      --bg-soft: #0c2b23;
+      --surface: #123a30;
+      --surface-2: #19483c;
+      --text: #f7faf8;
+      --muted: #c7d7d1;
+      --line: #4f776d;
+      --brand: #ffd94c;
+      --brand-ink: #1e1a00;
+      --accent: #48d58a;
+      --danger: #ff7b7b;
+      --warning: #ffd166;
+      --shadow: 0 18px 50px rgba(0,0,0,.22);
+      --radius: 18px;
+      --content: 1180px;
+      font-size: calc(16px * var(--font-scale));
+    }
+
+    html[data-theme="light"] {
+      --bg: #f4f8f6;
+      --bg-soft: #eaf2ee;
+      --surface: #ffffff;
+      --surface-2: #eef5f1;
+      --text: #13251f;
+      --muted: #50665d;
+      --line: #b9cbc3;
+      --brand: #8a6500;
+      --brand-ink: #ffffff;
+      --accent: #0c6f46;
+      --danger: #a82020;
+      --warning: #8a6200;
+      --shadow: 0 14px 34px rgba(18,57,47,.12);
+    }
+
+    html[data-contrast="high"] {
+      --bg: #000000;
+      --bg-soft: #000000;
+      --surface: #000000;
+      --surface-2: #101010;
+      --text: #ffffff;
+      --muted: #ffffff;
+      --line: #ffffff;
+      --brand: #ffff00;
+      --brand-ink: #000000;
+      --accent: #00ff88;
+      --danger: #ff6666;
+      --warning: #ffff00;
+      --shadow: none;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; }
+    html { scroll-behavior: smooth; scroll-padding-top: 86px; }
+    body {
+      margin: 0;
+      min-width: 280px;
+      background: var(--bg);
+      color: var(--text);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      line-height: 1.65;
+      text-rendering: optimizeLegibility;
+    }
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      z-index: -1;
+      pointer-events: none;
+      background:
+        radial-gradient(circle at 80% 15%, color-mix(in srgb, var(--accent) 9%, transparent), transparent 18rem),
+        radial-gradient(circle at 12% 72%, color-mix(in srgb, var(--brand) 7%, transparent), transparent 22rem);
+    }
+    a { color: inherit; }
+    img { max-width: 100%; height: auto; }
+    button, a { -webkit-tap-highlight-color: transparent; }
+    button, input, select, textarea { font: inherit; }
+    :focus-visible { outline: 4px solid var(--brand); outline-offset: 4px; border-radius: 6px; }
+
+    .skip-link {
+      position: fixed;
+      left: 1rem;
+      top: .75rem;
+      z-index: 9999;
+      transform: translateY(-160%);
+      background: var(--brand);
+      color: var(--brand-ink);
+      padding: .75rem 1rem;
+      border-radius: 10px;
+      font-weight: 800;
+      transition: transform .16s ease;
+    }
+    .skip-link:focus { transform: translateY(0); }
+
+    .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+      display: flex;
+      align-items: center;
+      gap: .75rem;
+      min-height: 70px;
+      padding: .65rem clamp(.85rem, 2vw, 1.5rem);
+      background: color-mix(in srgb, var(--bg) 88%, transparent);
+      border-bottom: 1px solid var(--line);
+      backdrop-filter: blur(14px);
+    }
+    .brand-mini {
+      display: inline-flex;
+      align-items: center;
+      gap: .65rem;
+      text-decoration: none;
+      font-weight: 800;
+      white-space: nowrap;
+    }
+    .brand-mini img { width: 32px; height: 38px; object-fit: contain; }
+    .topnav { margin-left: auto; display: flex; gap: .2rem; align-items: center; }
+    .topnav a {
+      text-decoration: none;
+      padding: .55rem .7rem;
+      border-radius: 10px;
+      font-size: .92rem;
+      color: var(--muted);
+    }
+    .topnav a:hover { color: var(--text); background: var(--surface); }
+    .access-btn {
+      border: 2px solid var(--text);
+      background: var(--surface);
+      color: var(--text);
+      border-radius: 12px;
+      padding: .65rem .9rem;
+      font-weight: 800;
+      cursor: pointer;
+    }
+    .access-panel {
+      position: fixed;
+      right: clamp(.75rem, 2vw, 1.5rem);
+      top: 78px;
+      z-index: 1200;
+      width: min(92vw, 360px);
+      padding: 1rem;
+      background: var(--surface);
+      border: 2px solid var(--line);
+      border-radius: 16px;
+      box-shadow: var(--shadow);
+    }
+    .access-panel[hidden] { display: none; }
+    .access-panel h2 { margin: 0 0 .8rem; font-size: 1.1rem; }
+    .controls-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: .5rem; margin-bottom: .7rem; }
+    .controls-row.two { grid-template-columns: 1fr 1fr; }
+    .control {
+      min-height: 46px;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      background: var(--bg-soft);
+      color: var(--text);
+      cursor: pointer;
+      font-weight: 750;
+    }
+    .control[aria-pressed="true"] { background: var(--brand); color: var(--brand-ink); border-color: var(--brand); }
+    .access-note { margin: .75rem 0 0; color: var(--muted); font-size: .85rem; }
+
+    main { overflow: clip; }
+    section { padding: clamp(4rem, 8vw, 7rem) clamp(1rem, 3vw, 2rem); }
+    .wrap { width: min(100%, var(--content)); margin-inline: auto; }
+    .eyebrow {
+      margin: 0 0 .5rem;
+      color: var(--brand);
+      font-size: .84rem;
+      font-weight: 900;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+    }
+    .section-title {
+      margin: 0;
+      max-width: 850px;
+      font-size: clamp(2rem, 4vw, 3.6rem);
+      line-height: 1.08;
+      letter-spacing: -.035em;
+    }
+    .section-lead { max-width: 800px; margin: 1rem 0 0; color: var(--muted); font-size: 1.08rem; }
+
+    .cover {
+      position: relative;
+      min-height: calc(100svh - 70px);
+      display: grid;
+      place-items: center;
+      padding-top: clamp(2.5rem, 7vw, 5.5rem);
+      border-top: 4px solid var(--brand);
+      background: linear-gradient(135deg, #052a20 0%, #0d4737 100%);
+      color: #fff;
+    }
+    html[data-theme="light"] .cover { background: linear-gradient(135deg, #eaf5f0 0%, #cfe8dc 100%); color: #10251e; }
+    html[data-contrast="high"] .cover { background: #000; color: #fff; }
+    .cover::after {
+      content: "";
+      position: absolute;
+      width: 12rem;
+      height: 12rem;
+      right: 7vw;
+      top: 9vh;
+      border-radius: 50%;
+      background: color-mix(in srgb, var(--accent) 9%, transparent);
+      pointer-events: none;
+    }
+    .cover-inner { width: min(100%, 1220px); margin-inline: auto; text-align: center; position: relative; z-index: 1; }
+    .institution {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 1rem;
+      margin-bottom: 1.8rem;
+      text-align: left;
+      font-weight: 800;
+      font-size: clamp(.96rem, 1.9vw, 1.2rem);
+    }
+    .institution img { width: clamp(74px, 8vw, 100px); aspect-ratio: 1 / 1.18; object-fit: contain; background: #fff; border-radius: 11px; padding: 8px; }
+    .course { margin: 0 auto 1rem; max-width: 1050px; color: var(--brand); font-weight: 950; text-transform: uppercase; letter-spacing: .065em; font-size: clamp(.92rem, 2vw, 1.35rem); }
+    .cover h1 { margin: .4rem auto .8rem; max-width: 1120px; font-size: clamp(2.55rem, 6vw, 5.4rem); line-height: .98; letter-spacing: -.045em; }
+    .subtitle { margin: 0 auto 2.4rem; max-width: 800px; font-size: clamp(1rem, 2.2vw, 1.35rem); color: color-mix(in srgb, currentColor 84%, transparent); }
+    .cover-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: .85rem; text-align: left; }
+    .cover-card { padding: 1rem 1.05rem; border: 1px solid rgba(255,255,255,.5); background: rgba(255,255,255,.1); border-radius: 14px; }
+    html[data-theme="light"] .cover-card { border-color: rgba(20,60,48,.35); background: rgba(255,255,255,.48); }
+    html[data-contrast="high"] .cover-card { border-color: #fff; background: #000; }
+    .cover-card strong { display: block; color: var(--brand); text-transform: uppercase; font-size: .78rem; letter-spacing: .04em; margin-bottom: .25rem; }
+    .members { grid-column: 1 / -1; text-align: center; }
+    .member-list { display: flex; flex-wrap: wrap; justify-content: center; gap: .55rem 1.2rem; }
+    .member-list span::before { content: "• "; color: var(--brand); }
+    .cover-footer { margin-top: 1.6rem; font-weight: 800; }
+
+    .summary-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-top: 2rem; }
+    .score-card { padding: 1.2rem; border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface); box-shadow: var(--shadow); }
+    .score-head { display: flex; align-items: start; justify-content: space-between; gap: 1rem; }
+    .site-name { font-size: 1.25rem; font-weight: 900; margin: 0; }
+    .site-url { color: var(--muted); font-size: .84rem; overflow-wrap: anywhere; }
+    .score {
+      flex: 0 0 auto;
+      display: grid;
+      place-items: center;
+      width: 76px;
+      height: 76px;
+      border: 8px solid var(--accent);
+      border-radius: 50%;
+      font-size: 1.42rem;
+      font-weight: 950;
+    }
+    .score-card p { color: var(--muted); }
+    .meter { height: 10px; background: var(--bg-soft); border-radius: 999px; overflow: hidden; border: 1px solid var(--line); }
+    .meter > span { display: block; height: 100%; width: var(--score); background: var(--accent); }
+    .meta-row { display: flex; flex-wrap: wrap; gap: .45rem; margin-top: 1rem; }
+    .chip { display: inline-flex; align-items: center; min-height: 28px; padding: .2rem .55rem; border: 1px solid var(--line); border-radius: 999px; font-size: .78rem; color: var(--muted); background: var(--bg-soft); }
+
+    .comparison { width: 100%; margin-top: 2rem; border-collapse: collapse; border: 1px solid var(--line); background: var(--surface); border-radius: var(--radius); overflow: hidden; display: block; overflow-x: auto; }
+    .comparison table { width: 100%; min-width: 760px; border-collapse: collapse; }
+    .comparison th, .comparison td { padding: .9rem 1rem; text-align: left; border-bottom: 1px solid var(--line); vertical-align: top; }
+    .comparison th { color: var(--brand); background: var(--bg-soft); }
+    .comparison tr:last-child td { border-bottom: 0; }
+
+    .site-section { border-top: 1px solid var(--line); }
+    .site-layout { display: grid; grid-template-columns: .72fr 1.28fr; gap: clamp(1.4rem, 4vw, 3rem); align-items: start; margin-top: 2rem; }
+    .site-sticky { position: sticky; top: 105px; }
+    .big-score { font-size: clamp(4.5rem, 10vw, 8rem); line-height: .9; letter-spacing: -.06em; font-weight: 950; color: var(--accent); }
+    .issue-list { display: grid; gap: .85rem; }
+    .issue { padding: 1rem 1.05rem; border: 1px solid var(--line); border-radius: 14px; background: var(--surface); }
+    .issue h3 { margin: 0 0 .4rem; font-size: 1.08rem; }
+    .issue p { margin: .3rem 0; color: var(--muted); }
+    .severity { display: inline-flex; padding: .15rem .5rem; border-radius: 999px; font-size: .72rem; font-weight: 900; text-transform: uppercase; letter-spacing: .05em; border: 1px solid currentColor; }
+    .severity.critical { color: var(--danger); }
+    .severity.moderate { color: var(--warning); }
+    .severity.info { color: var(--accent); }
+
+    .fixes { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem; margin-top: 2rem; }
+    .fix-card { padding: 1.15rem; border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface); }
+    .fix-card h3 { margin: 0 0 .75rem; }
+    pre {
+      margin: .8rem 0 0;
+      max-width: 100%;
+      overflow: auto;
+      padding: .85rem;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: #031713;
+      color: #f2fff8;
+      font-size: .86rem;
+      line-height: 1.55;
+      tab-size: 2;
+    }
+    html[data-theme="light"] pre { background: #132a22; color: #fff; }
+    .note { padding: 1rem; margin-top: 1rem; border-left: 5px solid var(--brand); background: var(--surface); border-radius: 0 12px 12px 0; color: var(--muted); }
+
+    .challenge {
+      margin-top: 2rem;
+      padding: clamp(1.2rem, 3vw, 2rem);
+      border: 2px solid var(--brand);
+      border-radius: 22px;
+      background: var(--surface);
+      box-shadow: var(--shadow);
+    }
+    .challenge-grid { display: grid; grid-template-columns: 1.1fr .9fr; gap: 1.25rem; align-items: center; }
+    .challenge h3 { font-size: clamp(1.5rem, 3vw, 2.3rem); margin: 0 0 .5rem; }
+    .challenge p { color: var(--muted); }
+    .challenge-actions { display: flex; flex-wrap: wrap; gap: .7rem; align-items: center; }
+    .primary, .secondary {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 48px;
+      padding: .65rem 1rem;
+      border-radius: 12px;
+      text-decoration: none;
+      font-weight: 900;
+      cursor: pointer;
+    }
+    .primary { border: 2px solid var(--brand); background: var(--brand); color: var(--brand-ink); }
+    .secondary { border: 2px solid var(--line); background: var(--bg-soft); color: var(--text); }
+    .timer { min-width: 145px; text-align: center; padding: 1rem; border: 1px solid var(--line); border-radius: 16px; background: var(--bg-soft); }
+    .timer-value { display: block; font-size: 2.2rem; font-weight: 950; color: var(--brand); }
+    .status { min-height: 1.6em; margin-top: .65rem; font-weight: 800; color: var(--accent); }
+
+    .reports-box { display: grid; grid-template-columns: 1fr auto; gap: 1.2rem; align-items: center; margin-top: 2rem; padding: 1.2rem; border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface); }
+    .reports-box h3 { margin: 0 0 .25rem; }
+    .reports-box p { margin: 0; color: var(--muted); }
+    .edit-hint { margin-top: .8rem; font-size: .86rem; color: var(--muted); }
+    code.inline { padding: .12rem .35rem; border-radius: 6px; background: var(--bg-soft); border: 1px solid var(--line); }
+
+    footer { padding: 2rem 1rem 3rem; border-top: 1px solid var(--line); color: var(--muted); text-align: center; }
+    footer strong { color: var(--text); }
+
+    @media (max-width: 980px) {
+      .topnav { display: none; }
+      .summary-grid { grid-template-columns: 1fr; }
+      .site-layout { grid-template-columns: 1fr; }
+      .site-sticky { position: static; }
+      .fixes { grid-template-columns: 1fr; }
+      .challenge-grid { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 720px) {
+      :root { --radius: 15px; }
+      .topbar { min-height: 64px; }
+      .brand-mini span { display: none; }
+      .cover { min-height: auto; padding-block: 3.5rem; }
+      .institution { flex-direction: column; text-align: center; }
+      .cover-grid { grid-template-columns: 1fr; }
+      .members { grid-column: auto; text-align: left; }
+      .member-list { display: grid; justify-content: start; gap: .25rem; }
+      .reports-box { grid-template-columns: 1fr; }
+      .reports-box .primary { width: 100%; }
+    }
+    @media (max-width: 420px) {
+      .access-btn { padding: .55rem .65rem; font-size: .85rem; }
+      section { padding-inline: .85rem; }
+      .score-head { align-items: center; }
+      .score { width: 66px; height: 66px; border-width: 7px; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { scroll-behavior: auto !important; animation-duration: .001ms !important; animation-iteration-count: 1 !important; transition-duration: .001ms !important; }
+    }
+    @media print {
+      .topbar, .access-panel, .skip-link, .challenge-actions { display: none !important; }
+      section { break-inside: avoid; padding-block: 1.5rem; }
+      .cover { min-height: auto; color: #000; background: #fff; border-top-color: #000; }
+      body { background: #fff; color: #000; }
+    }
+  </style>
+</head>
+<body>
+  <a class="skip-link" href="#conteudo">Pular para o conteúdo principal</a>
+
+  <header class="topbar" aria-label="Cabeçalho principal">
+    <a class="brand-mini" href="#capa" aria-label="Ir para a capa">
+      <img src="assets/ifrr-logo.svg" alt="Logotipo do Instituto Federal de Educação, Ciência e Tecnologia de Roraima" aria-label="Logotipo do IFRR">
+      <span>IFRR · IHC</span>
+    </a>
+    <nav class="topnav" aria-label="Navegação da apresentação">
+      <a href="#comparativo">Comparativo</a>
+      <a href="#amazon">Amazon</a>
+      <a href="#shein">SHEIN</a>
+      <a href="#site-grupo">Site do grupo</a>
+      <a href="#interatividade">Interatividade</a>
+      <a href="#relatorios">Relatórios</a>
+    </nav>
+    <button class="access-btn" id="accessToggle" type="button" aria-expanded="false" aria-controls="accessPanel" aria-label="Abrir painel de acessibilidade">Acessibilidade</button>
+  </header>
+
+  <aside class="access-panel" id="accessPanel" aria-labelledby="accessTitle" hidden>
+    <h2 id="accessTitle">Preferências de acessibilidade</h2>
+    <div class="controls-row" aria-label="Tamanho da fonte">
+      <button class="control" type="button" id="fontDown" aria-label="Reduzir tamanho da fonte">A−</button>
+      <button class="control" type="button" id="fontReset" aria-label="Restaurar tamanho padrão da fonte">A</button>
+      <button class="control" type="button" id="fontUp" aria-label="Aumentar tamanho da fonte">A+</button>
+    </div>
+    <div class="controls-row two">
+      <button class="control" type="button" id="themeToggle" aria-pressed="false" aria-label="Alternar entre tema claro e escuro">Tema claro</button>
+      <button class="control" type="button" id="contrastToggle" aria-pressed="false" aria-label="Ativar ou desativar alto contraste">Alto contraste</button>
+    </div>
+    <button class="control" type="button" id="prefsReset" style="width:100%" aria-label="Restaurar todas as preferências de visualização">Restaurar preferências</button>
+    <p class="access-note">As preferências ficam salvas neste navegador. O site também respeita a configuração de redução de movimento do sistema.</p>
+  </aside>
+
+  <main id="conteudo" tabindex="-1">
+    <section class="cover" id="capa" aria-labelledby="titulo-capa">
+      <div class="cover-inner">
+        <div class="institution">
+          <img src="assets/ifrr-logo.svg" alt="Logotipo do Instituto Federal de Educação, Ciência e Tecnologia de Roraima" aria-label="Logotipo institucional do IFRR">
+          <span>Instituto Federal de Educação, Ciência<br>e Tecnologia de Roraima</span>
+        </div>
+        <p class="course">Curso Superior de Tecnologia em Análise e Desenvolvimento de Sistemas</p>
+        <h1 id="titulo-capa">Auditoria de Acessibilidade Web</h1>
+        <p class="subtitle">Análise comparativa com Lighthouse, identificação de inadequações e recomendações de melhoria</p>
+
+        <div class="cover-grid" aria-label="Informações acadêmicas">
+          <div class="cover-card"><strong>Disciplina</strong>Interação Humano-Computador</div>
+          <div class="cover-card"><strong>Professor(a)</strong>Ricardo Jacauna</div>
+          <div class="cover-card"><strong>Turma</strong>Análise e Desenvolvimento de Sistemas</div>
+          <div class="cover-card members">
+            <strong>Integrantes</strong>
+            <div class="member-list">
+              <span>Carlos Gabriel de Morais Leal</span>
+              <span>Eric Freitas Sampaio</span>
+              <span>Larissa dos Passos Costa Ferreira</span>
+            </div>
+          </div>
+        </div>
+        <p class="cover-footer">Boa Vista — Roraima · 2026</p>
+      </div>
+    </section>
+
+    <section id="metodologia" aria-labelledby="titulo-metodologia">
+      <div class="wrap">
+        <p class="eyebrow">Etapa 1 · já realizada</p>
+        <h2 class="section-title" id="titulo-metodologia">Como a avaliação foi conduzida</h2>
+        <p class="section-lead">Foram auditados três sites com o Lighthouse 13.4.0, com foco na categoria Acessibilidade: Amazon Brasil, SHEIN Brasil e o site desenvolvido pelo grupo na atividade anterior.</p>
+        <div class="note"><strong>Limite do método:</strong> o próprio Lighthouse informa que a detecção automática cobre apenas parte dos problemas. Por isso, a pontuação deve ser combinada com testes manuais, navegação por teclado e validação com tecnologias assistivas.</div>
+      </div>
+    </section>
+
+    <section id="comparativo" aria-labelledby="titulo-comparativo">
+      <div class="wrap">
+        <p class="eyebrow">Síntese comparativa</p>
+        <h2 class="section-title" id="titulo-comparativo">Resultados dos três sites</h2>
+        <p class="section-lead">As três páginas obtiveram notas altas, mas os relatórios revelam diferenças importantes na natureza e na gravidade das barreiras encontradas.</p>
+
+        <div class="summary-grid">
+          <article class="score-card" aria-labelledby="amazon-card-title">
+            <div class="score-head"><div><h3 class="site-name" id="amazon-card-title">Amazon Brasil</h3><div class="site-url">amazon.com.br</div></div><div class="score" aria-label="Pontuação de acessibilidade: 92 de 100">92</div></div>
+            <p>Quatro auditorias automáticas falharam, além de verificações informativas sobre vídeos, imagens e links.</p>
+            <div class="meter" role="meter" aria-label="Pontuação Amazon" aria-valuemin="0" aria-valuemax="100" aria-valuenow="92"><span style="--score:92%"></span></div>
+            <div class="meta-row"><span class="chip">ARIA</span><span class="chip">Hierarquia</span><span class="chip">Alvos de toque</span><span class="chip">Nomes acessíveis</span></div>
+          </article>
+
+          <article class="score-card" aria-labelledby="shein-card-title">
+            <div class="score-head"><div><h3 class="site-name" id="shein-card-title">SHEIN Brasil</h3><div class="site-url">br.shein.com</div></div><div class="score" aria-label="Pontuação de acessibilidade: 97 de 100">97</div></div>
+            <p>O relatório aponta contraste insuficiente e registra práticas que ainda exigem atenção ou verificação manual.</p>
+            <div class="meter" role="meter" aria-label="Pontuação SHEIN" aria-valuemin="0" aria-valuemax="100" aria-valuenow="97"><span style="--score:97%"></span></div>
+            <div class="meta-row"><span class="chip">Contraste</span><span class="chip">ARIA</span><span class="chip">Links</span></div>
+          </article>
+
+          <article class="score-card" aria-labelledby="grupo-card-title">
+            <div class="score-head"><div><h3 class="site-name" id="grupo-card-title">Site do grupo</h3><div class="site-url">carlosdevj.github.io/trabalho-jacauna</div></div><div class="score" aria-label="Pontuação de acessibilidade: 100 de 100">100</div></div>
+            <p>Nenhuma falha automática foi registrada. O relatório ainda mantém dez itens para verificação manual.</p>
+            <div class="meter" role="meter" aria-label="Pontuação do site do grupo" aria-valuemin="0" aria-valuemax="100" aria-valuenow="100"><span style="--score:100%"></span></div>
+            <div class="meta-row"><span class="chip">27 auditorias aprovadas</span><span class="chip">10 manuais</span></div>
+          </article>
+        </div>
+
+        <div class="comparison" role="region" aria-label="Tabela comparativa dos resultados" tabindex="0">
+          <table>
+            <thead><tr><th scope="col">Site</th><th scope="col">Nota</th><th scope="col">Principais achados</th><th scope="col">Leitura do resultado</th></tr></thead>
+            <tbody>
+              <tr><td><strong>Amazon Brasil</strong></td><td>92</td><td>ARIA incompatível, ordem de títulos, alvo de toque pequeno e divergência entre rótulo visível e nome acessível.</td><td>Boa pontuação geral, mas com barreiras relevantes em navegação e tecnologia assistiva.</td></tr>
+              <tr><td><strong>SHEIN Brasil</strong></td><td>97</td><td>Contraste insuficiente; práticas de ARIA e finalidade de links também aparecem para atenção.</td><td>Resultado muito alto, com um problema automático de legibilidade claramente sinalizado.</td></tr>
+              <tr><td><strong>Site do grupo</strong></td><td>100</td><td>Sem falhas automáticas; dez verificações continuam dependentes de análise manual.</td><td>A auditoria automática foi totalmente aprovada, mas não substitui teste humano.</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <section class="site-section" id="amazon" aria-labelledby="titulo-amazon">
+      <div class="wrap">
+        <p class="eyebrow">Site 1 · Amazon Brasil</p>
+        <div class="site-layout">
+          <div class="site-sticky">
+            <h2 class="section-title" id="titulo-amazon">Amazon</h2>
+            <div class="big-score" aria-label="92 pontos de acessibilidade">92</div>
+            <p class="section-lead">A maior quantidade de problemas automáticos entre os três sites avaliados.</p>
+            <a class="secondary" href="https://www.amazon.com.br/" target="_blank" rel="noopener noreferrer" aria-label="Abrir site da Amazon Brasil em nova aba">Abrir site analisado</a>
+          </div>
+          <div class="issue-list">
+            <article class="issue"><span class="severity critical">Crítico</span><h3>Atributos ARIA incompatíveis com o papel do elemento</h3><p>O relatório identifica <code class="inline">aria-expanded="false"</code> no campo de busca com <code class="inline">role="searchbox"</code> e <code class="inline">aria-setsize="14"</code> em uma lista onde o atributo não é permitido.</p><p><strong>Recomendação:</strong> usar somente atributos ARIA previstos para o papel semântico real; quando o HTML nativo já resolve a semântica, evitar ARIA redundante.</p></article>
+            <article class="issue"><span class="severity moderate">Moderado</span><h3>Hierarquia de títulos fora de sequência</h3><p>O elemento “Conheça-nos” no rodapé aparece como <code class="inline">aria-level="6"</code> em uma ordem considerada inválida.</p><p><strong>Recomendação:</strong> manter uma hierarquia lógica de <code class="inline">h1</code> a <code class="inline">h6</code>, sem saltos motivados apenas por aparência visual.</p></article>
+            <article class="issue"><span class="severity critical">Impacto de interação</span><h3>Alvo de toque muito pequeno</h3><p>O botão “Expandir conta e listas” foi medido em aproximadamente 8 × 4 px; o relatório cita referência mínima de 24 × 24 px e espaçamento seguro entre alvos.</p><p><strong>Recomendação:</strong> ampliar a área clicável e garantir espaço ao redor do controle.</p></article>
+            <article class="issue"><span class="severity critical">Sério</span><h3>Texto visível não corresponde ao nome acessível</h3><p>Os controles “Carrinho” e “Todos” possuem conteúdo visível que não está integralmente incluído no nome anunciado por tecnologia assistiva.</p><p><strong>Recomendação:</strong> alinhar <code class="inline">aria-label</code> ao texto visível e evitar nomes acessíveis que omitam termos apresentados na tela.</p></article>
+            <article class="issue"><span class="severity info">Verificação informativa</span><h3>Vídeo, imagens e links</h3><p>O relatório também solicita verificação de legendas em um vídeo, identifica texto alternativo redundante em 17 imagens e pede consistência de finalidade em links idênticos.</p><p><strong>Recomendação:</strong> disponibilizar legendas, evitar repetir no <code class="inline">alt</code> um texto adjacente idêntico e manter links de mesma descrição com finalidade coerente.</p></article>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="site-section" id="shein" aria-labelledby="titulo-shein">
+      <div class="wrap">
+        <p class="eyebrow">Site 2 · SHEIN Brasil</p>
+        <div class="site-layout">
+          <div class="site-sticky">
+            <h2 class="section-title" id="titulo-shein">SHEIN</h2>
+            <div class="big-score" aria-label="97 pontos de acessibilidade">97</div>
+            <p class="section-lead">Nota elevada, com problema de contraste explicitamente registrado pelo relatório fornecido.</p>
+            <a class="secondary" href="https://br.shein.com/" target="_blank" rel="noopener noreferrer" aria-label="Abrir site da SHEIN Brasil em nova aba">Abrir site analisado</a>
+          </div>
+          <div class="issue-list">
+            <article class="issue"><span class="severity moderate">Contraste</span><h3>Cores de primeiro e segundo plano com contraste insuficiente</h3><p>O Lighthouse aponta oportunidade de melhorar a legibilidade do conteúdo por meio de uma taxa de contraste adequada.</p><p><strong>Recomendação:</strong> revisar os pares texto/fundo sinalizados e ajustar cor, peso tipográfico ou fundo até atingir os critérios aplicáveis da WCAG.</p></article>
+            <article class="issue"><span class="severity info">Prática recomendada</span><h3>Papéis ARIA em elementos compatíveis</h3><p>O relatório inclui a verificação de uso de papéis ARIA apenas em elementos compatíveis entre as práticas recomendadas.</p><p><strong>Recomendação:</strong> priorizar elementos semânticos nativos e validar cada <code class="inline">role</code> e seus atributos associados.</p></article>
+            <article class="issue"><span class="severity info">Prática recomendada</span><h3>Links idênticos com a mesma finalidade</h3><p>Também aparece a necessidade de conferir se links com a mesma descrição levam à mesma finalidade ou se a ambiguidade é intencional.</p><p><strong>Recomendação:</strong> usar textos de link específicos e consistentes, especialmente quando o destino ou a ação é diferente.</p></article>
+            <div class="note"><strong>Observação da execução:</strong> o relatório da SHEIN informa que dados armazenados em IndexedDB podem ter afetado o desempenho de carregamento e recomenda nova execução em janela anônima. A versão PDF fornecida não expande qual elemento específico falhou no contraste; por isso, esta apresentação não inventa um seletor ou componente.</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="site-section" id="site-grupo" aria-labelledby="titulo-grupo">
+      <div class="wrap">
+        <p class="eyebrow">Site 3 · atividade do grupo</p>
+        <div class="site-layout">
+          <div class="site-sticky">
+            <h2 class="section-title" id="titulo-grupo">Site do grupo</h2>
+            <div class="big-score" aria-label="100 pontos de acessibilidade">100</div>
+            <p class="section-lead">Todas as auditorias automáticas aplicáveis foram aprovadas.</p>
+            <a class="secondary" href="https://carlosdevj.github.io/trabalho-jacauna/#capa" target="_blank" rel="noopener noreferrer" aria-label="Abrir site do grupo em nova aba">Abrir site analisado</a>
+          </div>
+          <div class="issue-list">
+            <article class="issue"><span class="severity info">Aprovado</span><h3>27 auditorias automáticas aprovadas</h3><p>O relatório registra nota 100 na categoria Acessibilidade, sem falhas automáticas apresentadas.</p></article>
+            <article class="issue"><span class="severity moderate">Ainda necessário</span><h3>10 verificações manuais</h3><p>Mesmo com nota máxima, permanecem itens que uma ferramenta automática não consegue avaliar completamente.</p><p><strong>Recomendação:</strong> testar ordem do foco, uso somente por teclado, clareza dos estados interativos, leitura com leitor de tela, ampliação de conteúdo e compreensão sem dependência exclusiva de cor.</p></article>
+            <article class="issue"><span class="severity info">Aplicação prática</span><h3>A própria página de apresentação segue os mesmos princípios</h3><p>Esta versão utiliza HTML semântico, link de salto, foco visível, controles de fonte, tema, alto contraste, responsividade e nomes acessíveis em componentes interativos.</p></article>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="solucoes" aria-labelledby="titulo-solucoes">
+      <div class="wrap">
+        <p class="eyebrow">Exemplos de correção</p>
+        <h2 class="section-title" id="titulo-solucoes">Da inadequação à solução</h2>
+        <p class="section-lead">Exemplos simplificados para explicar durante a apresentação o tipo de mudança sugerida pelo Lighthouse.</p>
+        <div class="fixes">
+          <article class="fix-card"><h3>1. Nome acessível coerente</h3><p>O nome anunciado deve refletir o texto que a pessoa enxerga.</p><pre aria-label="Exemplo de correção de nome acessível"><code>&lt;a href="/carrinho" aria-label="Carrinho, 0 itens"&gt;
+  &lt;span aria-hidden="true"&gt;0&lt;/span&gt;
+  Carrinho
+&lt;/a&gt;</code></pre></article>
+          <article class="fix-card"><h3>2. Alvo de toque adequado</h3><p>A área interativa precisa ser grande o suficiente para toque e navegação motora.</p><pre aria-label="Exemplo de CSS para alvo de toque"><code>.botao-conta {
+  min-width: 44px;
+  min-height: 44px;
+  padding: 10px 12px;
+}</code></pre></article>
+          <article class="fix-card"><h3>3. Hierarquia semântica</h3><p>O nível do título deve representar a estrutura, não apenas o tamanho visual.</p><pre aria-label="Exemplo de hierarquia de títulos"><code>&lt;h1&gt;Página inicial&lt;/h1&gt;
+  &lt;h2&gt;Rodapé institucional&lt;/h2&gt;
+    &lt;h3&gt;Conheça-nos&lt;/h3&gt;</code></pre></article>
+          <article class="fix-card"><h3>4. Contraste suficiente</h3><p>Evite combinações em que texto e fundo se confundem, principalmente em textos pequenos.</p><pre aria-label="Exemplo de CSS com contraste"><code>.texto-secundario {
+  color: #263a33;
+  background: #ffffff;
+}</code></pre></article>
+        </div>
+      </div>
+    </section>
+
+    <section id="interatividade" aria-labelledby="titulo-interatividade">
+      <div class="wrap">
+        <p class="eyebrow">Interatividade obrigatória · Opção C</p>
+        <h2 class="section-title" id="titulo-interatividade">Teste de usabilidade instantâneo</h2>
+        <p class="section-lead">A turma experimenta a acessibilidade da própria página, em vez de apenas ouvir uma explicação.</p>
+        <div class="challenge">
+          <div class="challenge-grid">
+            <div>
+              <h3>Desafio: encontre os relatórios usando apenas o teclado</h3>
+              <p>1. Clique em “Iniciar desafio”. 2. Tire a mão do mouse. 3. Use somente <strong>Tab</strong> e <strong>Shift + Tab</strong>. 4. Encontre e ative o link “Abrir pasta de relatórios”.</p>
+              <div class="challenge-actions">
+                <button class="primary" type="button" id="challengeStart" aria-label="Iniciar desafio de navegação por teclado">Iniciar desafio</button>
+                <a class="secondary" href="#relatorios" aria-label="Ir diretamente para a seção de relatórios">Ver seção de relatórios</a>
+              </div>
+              <div class="status" id="challengeStatus" aria-live="polite"></div>
+            </div>
+            <div class="timer" aria-label="Tempo restante do desafio"><span>Tempo</span><span class="timer-value" id="timerValue">01:30</span><span>minutos</span></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="relatorios" aria-labelledby="titulo-relatorios">
+      <div class="wrap">
+        <p class="eyebrow">Evidências da auditoria</p>
+        <h2 class="section-title" id="titulo-relatorios">Relatórios completos</h2>
+        <p class="section-lead">O trabalho exige um link direto para a pasta pública contendo o arquivo compactado com os três relatórios do Lighthouse.</p>
+        <div class="reports-box">
+          <div><h3>Pasta com os relatórios</h3><p>Amazon Brasil · SHEIN Brasil · Site do grupo</p><div class="edit-hint">Antes de publicar, substitua <code class="inline">REPORTS_URL</code> no final deste HTML pelo link público do Google Drive, OneDrive ou serviço escolhido.</div></div>
+          <a class="primary" id="reportsLink" href="#relatorios" aria-label="Abrir pasta pública com os relatórios de acessibilidade">Abrir pasta de relatórios</a>
+        </div>
+      </div>
+    </section>
+
+    <section id="conclusao" aria-labelledby="titulo-conclusao">
+      <div class="wrap">
+        <p class="eyebrow">Conclusão</p>
+        <h2 class="section-title" id="titulo-conclusao">Nota alta não elimina a necessidade de teste humano</h2>
+        <p class="section-lead">Os resultados mostram que o Lighthouse é eficiente para localizar problemas técnicos recorrentes, mas a acessibilidade real depende também de navegação, compreensão, contexto, tecnologia assistiva e experiência de pessoas reais.</p>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <strong>Interação Humano-Computador · IFRR</strong><br>
+    Trabalho acadêmico — Boa Vista, Roraima · 2026
+  </footer>
+
+  <script>
+    "use strict";
+
+    // SUBSTITUA PELO LINK PÚBLICO DA PASTA/ZIP ANTES DE PUBLICAR.
+    const REPORTS_URL = "COLE_AQUI_O_LINK_PUBLICO_DA_PASTA";
+
+    const root = document.documentElement;
+    const accessToggle = document.getElementById("accessToggle");
+    const accessPanel = document.getElementById("accessPanel");
+    const themeToggle = document.getElementById("themeToggle");
+    const contrastToggle = document.getElementById("contrastToggle");
+    const reportsLink = document.getElementById("reportsLink");
+    const status = document.getElementById("challengeStatus");
+    const timerValue = document.getElementById("timerValue");
+    let fontScale = 1;
+    let challengeActive = false;
+    let keyboardNavigationUsed = false;
+    let timerId = null;
+    let secondsLeft = 90;
+
+    function announce(message) {
+      status.textContent = message;
+    }
+
+    function savePrefs() {
+      localStorage.setItem("ihc-accessibility-prefs", JSON.stringify({
+        theme: root.dataset.theme,
+        contrast: root.dataset.contrast,
+        fontScale
+      }));
+    }
+
+    function updateControls() {
+      const isLight = root.dataset.theme === "light";
+      const isHigh = root.dataset.contrast === "high";
+      themeToggle.setAttribute("aria-pressed", String(isLight));
+      contrastToggle.setAttribute("aria-pressed", String(isHigh));
+      themeToggle.textContent = isLight ? "Tema escuro" : "Tema claro";
+      contrastToggle.textContent = isHigh ? "Contraste normal" : "Alto contraste";
+    }
+
+    function setFontScale(value) {
+      fontScale = Math.max(.85, Math.min(1.35, value));
+      root.style.setProperty("--font-scale", fontScale.toFixed(2));
+      savePrefs();
+    }
+
+    try {
+      const stored = JSON.parse(localStorage.getItem("ihc-accessibility-prefs") || "null");
+      if (stored) {
+        if (["dark", "light"].includes(stored.theme)) root.dataset.theme = stored.theme;
+        if (["normal", "high"].includes(stored.contrast)) root.dataset.contrast = stored.contrast;
+        if (typeof stored.fontScale === "number") setFontScale(stored.fontScale);
+      }
+    } catch (_) {}
+    updateControls();
+
+    accessToggle.addEventListener("click", () => {
+      const willOpen = accessPanel.hidden;
+      accessPanel.hidden = !willOpen;
+      accessToggle.setAttribute("aria-expanded", String(willOpen));
+      if (willOpen) document.getElementById("fontDown").focus();
+    });
+
+    document.addEventListener("keydown", (event) => {
+      if (event.key === "Escape" && !accessPanel.hidden) {
+        accessPanel.hidden = true;
+        accessToggle.setAttribute("aria-expanded", "false");
+        accessToggle.focus();
+      }
+      if (event.key === "Tab") keyboardNavigationUsed = true;
+    });
+
+    document.getElementById("fontDown").addEventListener("click", () => setFontScale(fontScale - .1));
+    document.getElementById("fontReset").addEventListener("click", () => setFontScale(1));
+    document.getElementById("fontUp").addEventListener("click", () => setFontScale(fontScale + .1));
+
+    themeToggle.addEventListener("click", () => {
+      root.dataset.theme = root.dataset.theme === "dark" ? "light" : "dark";
+      updateControls();
+      savePrefs();
+    });
+
+    contrastToggle.addEventListener("click", () => {
+      root.dataset.contrast = root.dataset.contrast === "high" ? "normal" : "high";
+      updateControls();
+      savePrefs();
+    });
+
+    document.getElementById("prefsReset").addEventListener("click", () => {
+      root.dataset.theme = "dark";
+      root.dataset.contrast = "normal";
+      setFontScale(1);
+      updateControls();
+      savePrefs();
+    });
+
+    if (/^https?:\/\//i.test(REPORTS_URL)) {
+      reportsLink.href = REPORTS_URL;
+      reportsLink.target = "_blank";
+      reportsLink.rel = "noopener noreferrer";
+    } else {
+      reportsLink.addEventListener("click", (event) => {
+        event.preventDefault();
+        announce("O link público dos relatórios ainda precisa ser configurado no arquivo HTML.");
+      });
+    }
+
+    function renderTime() {
+      const min = String(Math.floor(secondsLeft / 60)).padStart(2, "0");
+      const sec = String(secondsLeft % 60).padStart(2, "0");
+      timerValue.textContent = `${min}:${sec}`;
+    }
+
+    function finishChallenge(message) {
+      challengeActive = false;
+      if (timerId) clearInterval(timerId);
+      timerId = null;
+      announce(message);
+    }
+
+    document.getElementById("challengeStart").addEventListener("click", () => {
+      secondsLeft = 90;
+      challengeActive = true;
+      keyboardNavigationUsed = false;
+      renderTime();
+      announce("Desafio iniciado. Agora use apenas Tab e Shift + Tab para chegar ao link dos relatórios.");
+      if (timerId) clearInterval(timerId);
+      timerId = setInterval(() => {
+        secondsLeft -= 1;
+        renderTime();
+        if (secondsLeft <= 0) finishChallenge("Tempo encerrado. Conversem sobre onde a navegação ficou fácil ou difícil.");
+      }, 1000);
+    });
+
+    reportsLink.addEventListener("focus", () => {
+      if (challengeActive && keyboardNavigationUsed) {
+        finishChallenge("Sucesso: o link dos relatórios foi alcançado usando navegação por teclado.");
+      }
+    });
+  </script>
+</body>
+</html>

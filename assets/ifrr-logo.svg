@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 210 260" role="img" aria-labelledby="title desc">
+  <title id="title">Logotipo IFRR</title>
+  <desc id="desc">Símbolo dos Institutos Federais com blocos verdes, círculo vermelho e identificação IFRR.</desc>
+  <rect width="210" height="260" rx="12" fill="#ffffff"/>
+  <g fill="#168821">
+    <rect x="28" y="28" width="42" height="42" rx="4"/>
+    <rect x="78" y="28" width="42" height="42" rx="4"/>
+    <rect x="28" y="78" width="42" height="42" rx="4"/>
+    <rect x="78" y="78" width="42" height="42" rx="4"/>
+    <rect x="128" y="78" width="42" height="42" rx="4"/>
+    <rect x="28" y="128" width="42" height="42" rx="4"/>
+    <rect x="78" y="128" width="42" height="42" rx="4"/>
+    <rect x="128" y="128" width="42" height="42" rx="4"/>
+    <rect x="28" y="178" width="42" height="42" rx="4"/>
+    <rect x="78" y="178" width="42" height="42" rx="4"/>
+  </g>
+  <circle cx="149" cy="49" r="21" fill="#d71920"/>
+  <text x="105" y="248" text-anchor="middle" font-family="Arial, sans-serif" font-size="28" font-weight="700" fill="#111827">IFRR</text>
+</svg>
