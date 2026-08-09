@@ -39,7 +39,9 @@ A seção exibe três opções identificáveis:
 - SHEIN Brasil.
 - Site do grupo.
 
-Cada opção deve mostrar apenas identidade/nome do site e, quando tecnicamente viável sem comprometer o desempenho, um preview visual neutro. O preview não pode conter a nota do Lighthouse.
+Cada opção deve exibir um print real ou uma captura visual fiel da página auditada, sem qualquer nota do Lighthouse, indicador de pontuação ou elemento que antecipe o resultado. A implementação deve priorizar capturas derivadas dos próprios relatórios/auditorias ou da página pública correspondente, evitando imagens ilustrativas ou recriações que possam distorcer o visual real do site avaliado.
+
+Os prints devem possuir texto alternativo que descreva o conteúdo visual sem revelar qualquer resultado de acessibilidade.
 
 ### Interação
 
@@ -137,9 +139,9 @@ Requisitos:
 
 A navegação superior não deve conter links com texto que revele notas antes do quiz.
 
-A seção comparativa e as análises detalhadas podem continuar presentes no DOM, desde que não exponham pontuações por mecanismos de acessibilidade antes da revelação. Para evitar inconsistência, a abordagem preferida é manter a seção de resultados realmente oculta com `hidden` até a revelação, e só então remover o atributo `hidden`.
+A seção comparativa e as análises detalhadas podem permanecer no documento, mas devem ficar realmente indisponíveis antes da revelação por meio do atributo `hidden`. Assim, as pontuações não aparecem visualmente nem são expostas à árvore de acessibilidade antes da interação.
 
-O botão de revelação deve mover o foco para o título da seção revelada, usando `tabindex="-1"` no heading quando necessário.
+Depois da revelação, o atributo `hidden` é removido das seções de resultados e análise. O foco deve ser movido para o título da seção revelada, usando `tabindex="-1"` quando necessário.
 
 ## Tratamento de erros
 
@@ -161,6 +163,7 @@ Comportamento esperado:
 - desktop: três opções lado a lado quando houver espaço;
 - tablet: grid de duas colunas quando apropriado;
 - mobile: uma coluna, com controles amplos e áreas de toque confortáveis;
+- prints responsivos, sem corte que prejudique a identificação do site;
 - nenhuma rolagem horizontal causada pela nova seção.
 
 ## Critérios de aceitação
@@ -168,15 +171,16 @@ Comportamento esperado:
 A alteração é considerada pronta quando:
 
 1. A marca exibida é uma versão institucional correta do IFRR.
-2. Nenhuma nota do Lighthouse aparece antes da revelação.
-3. O participante consegue escolher melhor e pior site usando apenas teclado.
-4. O mesmo site não pode ser aceito simultaneamente como melhor e pior.
-5. O palpite pode ser confirmado e fica bloqueado.
-6. A revelação mostra 92, 97 e 100 somente depois da confirmação.
-7. A página informa quais palpites foram acertados.
-8. “Novo palpite” restaura corretamente o estado inicial.
-9. A dinâmica continua funcional em tema claro, escuro, alto contraste e com fonte ampliada.
-10. O restante da apresentação continua acessível e o link dos relatórios permanece apontando para a pasta pública do Google Drive.
+2. O quiz mostra prints reais/fieis dos três sites antes das notas.
+3. Nenhuma nota do Lighthouse aparece antes da revelação.
+4. O participante consegue escolher melhor e pior site usando apenas teclado.
+5. O mesmo site não pode ser aceito simultaneamente como melhor e pior.
+6. O palpite pode ser confirmado e fica bloqueado.
+7. A revelação mostra 92, 97 e 100 somente depois da confirmação.
+8. A página informa quais palpites foram acertados.
+9. “Novo palpite” restaura corretamente o estado inicial.
+10. A dinâmica continua funcional em tema claro, escuro, alto contraste e com fonte ampliada.
+11. O restante da apresentação continua acessível e o link dos relatórios permanece apontando para a pasta pública do Google Drive.
 
 ## Verificação
 
@@ -190,5 +194,6 @@ A implementação deverá ser validada por inspeção e teste funcional dos segu
 - uso somente com teclado;
 - uso em viewport mobile;
 - uso nos três modos visuais da apresentação;
-- inspeção do HTML para confirmar que as notas não são expostas antes da revelação;
-- carregamento correto da marca institucional do IFRR.
+- inspeção do HTML/DOM para confirmar que as notas não são expostas antes da revelação;
+- carregamento correto da marca institucional do IFRR;
+- carregamento correto e identificação visual dos três prints do quiz.
